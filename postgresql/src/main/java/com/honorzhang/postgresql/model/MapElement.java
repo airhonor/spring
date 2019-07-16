@@ -7,33 +7,36 @@ import java.math.BigDecimal;
 
 /**
  * @program: postgresql
- * @description: map实体
  * @author: zgr
  * @create: 2019-07-01 14:35
  **/
 @Data
 public class MapElement {
 
+    /**
+     * 数据库自增主键
+     */
     private Long id;
 
+    /**
+     * 地图元素的名称（医院，银行，警察局等）
+     */
     private String name;
 
+
+     //地图元素（医院，银行，警察局）以点的形式存储
     /**
-     * 身份唯一标识
+     * 地图元素位置点的的纬度
      */
-    private String uniqueCode;
+    private Double latitude;
 
-    private String type;
+    /**
+     * 地图元素位置点的经度
+     */
+    private Double longitude;
 
-    private double latitude;
-
-    private double longitude;
-
-    private String subType;
-
-    private String remark;
-
-    private BigDecimal price;
-
+    /**
+     * 空间信息转换为字符串
+     */
     private String geoStr;
 }

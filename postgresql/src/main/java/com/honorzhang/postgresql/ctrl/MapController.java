@@ -1,5 +1,7 @@
 package com.honorzhang.postgresql.ctrl;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.honorzhang.postgresql.model.MapElement;
 import com.honorzhang.postgresql.service.MapService;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,82 +23,24 @@ import java.util.List;
  **/
 @Slf4j
 @RestController
-@RequestMapping("/dim/element/basic")
+@RequestMapping("/postgis/test")
 
 public class MapController {
-    @Value("${geometryType:POINT}")
-    private String geometryType;
 
     @Autowired
     private MapService mapService;
 
     /**
-     * @param mapElement 元素
-     * @return list类型的mapElement
-     */
-    @GetMapping()
-    public List<MapElement> findAll(MapElement mapElement){
-        List<MapElement> mapElementList =  mapService.findAll();
-
-        try {
-            for(int i = 0; i < mapElementList.size(); i++) {
-                double[] longitudeAndLatitude = getLonAndLat(mapElementList.get(i));
-                mapElementList.get(i).setLongitude(longitudeAndLatitude[0]);
-                mapElementList.get(i).setLatitude(longitudeAndLatitude[1]);
-            }
-        }catch (Exception e){
-            log.info("错误信息："+ e);
-        }
-        return mapElementList;
-    }
-
-    /**
-     * @param longitude 经度
-     * @param latitude 维度
-     * @param type 元素大类
-     * @param subType 元素细分类
-     * @param radius 区域半径，单位为km
-     * @return 以给定点为原型，radis为半径的区域中满足条件的元素的集合
-     */
-    @GetMapping("/spatial/circle")
-    public List<MapElement> findMapElementByCircle(Long longitude, Long latitude, String type, String subType, double radius){
-
-
-        return null;
-    }
-
-    /**
+     * 添加地图元素
      * @param mapElement
-     * @return 添加的map信息
+     * @return 添加的地理元素信息
      */
-    @PostMapping()
+    @PostMapping
     public MapElement addMapElement(@RequestBody MapElement mapElement){
-        String geoString = getGeometryText(mapElement);
-        mapElement.setGeoStr(geoString);
-
+        mapElement.setGeoStr(geometryToString(mapElement.getLongitude(), mapElement.getLatitude()));
         mapService.addMapElement(mapElement);
         Long id = mapElement.getId();
-        MapElement mapElementResult =  mapService.findById(id);
-        double[] longitudeAndLatitude = getLonAndLat(mapElementResult);
-        mapElementResult.setLongitude(longitudeAndLatitude[0]);
-        mapElementResult.setLatitude(longitudeAndLatitude[1]);
-
-        return mapElementResult;
-    }
-
-    @PutMapping()
-    public MapElement updateMapElement(@RequestBody MapElement mapElement){
-        String geoString = getGeometryText(mapElement);
-        mapElement.setGeoStr(geoString);
-
-        mapService.updateMapElement(mapElement);
-        Long id = mapElement.getId();
-        MapElement mapElementResult =  mapService.findById(id);
-        double[] longitudeAndLatitude = getLonAndLat(mapElementResult);
-        mapElementResult.setLongitude(longitudeAndLatitude[0]);
-        mapElementResult.setLatitude(longitudeAndLatitude[1]);
-
-        return mapElementResult;
+        return mapService.findById(id);
     }
 
     /**
@@ -114,38 +59,81 @@ public class MapController {
         return deleteMapElementSuccess;
     }
 
-
     /**
+     * 数据更改
      * @param mapElement
-     * @return 包含经纬度的长度为2的一维数组
+     * @return 更改后的数据
      */
-    private double[] getLonAndLat(MapElement mapElement){
-        double[] longitudeAndLatitude = new double[2];
-        try{
-            JSONObject point = JSONObject.fromObject(mapElement.getGeoStr());
-            JSONArray coordinate = point.getJSONArray("coordinates");
-            //longitude  经度
-            //latitude 维度
-            longitudeAndLatitude[0] = (double) coordinate.get(0);
-            longitudeAndLatitude[1] = (double) coordinate.get(1);
-
-        }catch (Exception e){
-            log.info("错误信息：" + e);
-
-        }
-        return longitudeAndLatitude;
+    @PutMapping()
+    public MapElement updateMapElement(@RequestBody MapElement mapElement){
+        mapElement.setGeoStr(geometryToString(mapElement.getLongitude(), mapElement.getLatitude()));
+        mapService.updateMapElement(mapElement);
+        Long id = mapElement.getId();
+        return mapService.findById(id);
     }
 
     /**
-     * @param mapElement
-     * @return 由经纬度组成的地理信息
+     * 查询全部信息
+     * @return
      */
-    private String getGeometryText(MapElement mapElement){
-        double latitude = mapElement.getLatitude();
-        double longitude = mapElement.getLongitude();
-        String geoString = geometryType + "(" + longitude + " " + latitude + ")";
-        return geoString;
+    @GetMapping("/list")
+    public List<MapElement> findAll(){
+        return mapService.findAll();
+    }
 
+    /**
+     * 条件查找
+     * @param mapElement
+     * @return 复合条件的地图元素
+     */
+    @GetMapping("/condition")
+    public List<MapElement> findMapElementByCondition(MapElement mapElement){
+        return mapService.findMapElementByCondition(mapElement);
+    }
+
+    /**
+     * 分页查找
+     * @param currentPage 当前在第几页
+     * @param pageSize 每页数据条数
+     * @return 带PageInfo信息的返回结果
+     */
+    @GetMapping
+    public PageInfo<MapElement> findMapElementByPage(int currentPage, int pageSize) {
+        PageHelper.startPage(currentPage, pageSize);
+        List<MapElement> list = mapService.findAll();
+        return new PageInfo<>(list);
+    }
+
+    /**
+     * 圆形区域查找
+     * @param longitude 圆形区域圆心之经度
+     * @param latitude 圆形区域圆心之纬度
+     * @param radius 区域半径，单位为km
+     * @return 以给定点为原型，radis为半径的区域中满足条件的元素的集合
+     */
+    @GetMapping("/circle")
+    public List<MapElement> findByMapElementCircle(double longitude, double latitude, double radius){
+        String geometry = "(" + longitude + " " + latitude + ")";
+        //单位转换
+        double radiusMeter = radius * 1000;
+        return mapService.findMapElementByCircle(geometry, radiusMeter);
+    }
+
+    /**
+     * 多边形区域查找
+     * @param geometry 多边形参数
+     * @return 满足条件的结果
+     */
+    @GetMapping("/polygon")
+    public List<MapElement> findByMapElementPolygon(String geometry){
+        return mapService.findMapElementByPolygon(geometry);
+    }
+
+
+
+    private String geometryToString(double longitude, double latitude){
+        String geoStr = "POINT" + "(" + longitude + " " + latitude + ")";
+        return geoStr;
     }
 
 

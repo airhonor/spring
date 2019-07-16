@@ -1,9 +1,8 @@
 package com.honorzhang.postgresql.service.impl;
 
-import com.honorzhang.postgresql.mapper.MyMapMapper;
+import com.honorzhang.postgresql.mapper.MapElementMapper;
 import com.honorzhang.postgresql.model.MapElement;
 import com.honorzhang.postgresql.service.MapService;
-import org.apache.ibatis.annotations.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,37 +19,50 @@ public class MapServiceImpl implements MapService {
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
-    private MyMapMapper myMapMapper;
+    private MapElementMapper mapElementMapper;
+    private String geometry;
+    private double radius;
 
     @Override
     public List<MapElement> findAll() {
-        return myMapMapper.findAll();
+        return mapElementMapper.findAll();
+    }
+
+    @Override
+    public List<MapElement> findMapElementByCondition(MapElement mapElement) {
+        return mapElementMapper.findMapElementByCondition(mapElement);
     }
 
     @Override
     public void addMapElement(MapElement mapElement) {
-        myMapMapper.addMapElement(mapElement);
+        mapElementMapper.addMapElement(mapElement);
     }
 
     @Override
     public MapElement findById(Long id) {
-        return myMapMapper.findById(id);
+        return mapElementMapper.findById(id);
     }
 
     @Override
     public void updateMapElement(MapElement mapElement) {
-        myMapMapper.updateMapElement(mapElement);
+        mapElementMapper.updateMapElement(mapElement);
     }
 
     @Override
     public void deleteMapElement(Long id) {
-        myMapMapper.deleteMapElement(id);
+        mapElementMapper.deleteMapElement(id);
     }
 
     @Override
-    public List<MapElement> findMapElementByCircle(String geometry, String type, String subType, double radius) {
-        return myMapMapper.findMapElementByCircle(geometry, type, subType, radius);
+    public List<MapElement> findMapElementByCircle(String geometry, double radius) {
+        return mapElementMapper.findMapElementByCircle(geometry, radius);
     }
+
+    @Override
+    public List<MapElement> findMapElementByPolygon(String geometry) {
+        return mapElementMapper.findMapElementByPolygon(geometry);
+    }
+
 
 
 }

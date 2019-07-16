@@ -24,57 +24,38 @@
   -->
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.honorzhang.postgresql.mapper.MyMapMapper">
+<mapper namespace="com.honorzhang.postgresql.mapper.MapElementMapper">
     <resultMap id="MapElementMap" type="com.honorzhang.postgresql.model.MapElement">
         <id property="id" column="id"/>
         <result property="name" javaType="String" jdbcType="VARCHAR" column="name"/>
-        <result property="uniqueCode" javaType="String" jdbcType="VARCHAR" column="unique_code"/>
-        <result property="type" javaType="String" jdbcType="VARCHAR" column="type"/>
-        <result property="subType" javaType="String" jdbcType="VARCHAR" column="sub_type"/>
-        <result property="remark" javaType="String" jdbcType="VARCHAR" column="remark"/>
-        <result property="price" javaType="BigDecimal" jdbcType="NUMERIC" column="price"/>
+        <result property="latitude" javaType="Double" jdbcType="REAL" column="latitude"/>
+        <result property="longitude" javaType="Double" jdbcType="REAL" column="longitude"/>
         <result property="geoStr" javaType="String" jdbcType="VARCHAR" column="element_location"/>
-
-
-
     </resultMap>
 
 
     <!--查询全部-->
     <select id="findAll" resultMap="MapElementMap">
-        SELECT id, name, unique_code,
-            type, sub_type, remark, price,
+        SELECT id, name, longitude, latitude,
             ST_AsGeoJson(element_location) as element_location
 
             FROM map_elements
     </select>
 
     <select id="findById" parameterType="Long" resultMap="MapElementMap">
-        SELECT id, name, unique_code,
-            type, sub_type, remark, price,
+        SELECT id, name, longitude, latitude,
             ST_AsGeoJson(element_location) as element_location
+
             FROM map_elements
             where id = #{id}
-    </select>
-
-
-    <select id="findMapElementByCircle" resultMap="MapElementMap">
-        SELECT id, name, unique_code,
-            type, sub_type, remark, price,
-            ST_AsGeoJson(element_location) as element_location
-            ST_Intersects(ST_Buffer(ST_GeomFromText(#{geoStr}, 4326)), st_geomfromewkt('SRID=4326; POLYGON((' || imageZone || '))')) = 't'"
-
     </select>
 
     <update id="updateMapElement"  parameterType="com.honorzhang.postgresql.model.MapElement" useGeneratedKeys="true" keyProperty="id" >
         UPDATE map_elements
         <trim prefix="set" suffixOverrides=",">
             <if test="name!=null">name=#{name},</if>
-            <if test="uniqueCode!=null">unique_code=#{uniqueCode},</if>
-            <if test="type!=null">type=#{type},</if>
-            <if test="subType!=null">sub_type=#{subType},</if>
-            <if test="remark!=null">remark=#{remark},</if>
-            <if test="price!=null">price=#{price},</if>
+            <if test="longitude!=null">longitude=#{longitude},</if>
+            <if test="latitude!=null">latitude=#{latitude},</if>
             <if test="geoStr!=null">element_location=ST_GeomFromText(#{geoStr}, 4326),</if>
 
         </trim>
@@ -83,16 +64,51 @@
 
 
     <insert id="addMapElement" parameterType="com.honorzhang.postgresql.model.MapElement" useGeneratedKeys="true" keyProperty="id">
-        <selectKey keyProperty="id" resultType="Long" order="AFTER">
-            SELECT nextval('map_id_seq'::regclass)
+        <selectKey keyProperty="id" resultType="Long" order="BEFORE">
+            SELECT nextval('map_elements_id_seq'::regclass)
         </selectKey>
-
-        insert into map_elements(name, unique_code,type, sub_type, remark, price, element_location)
-        values (#{name}, #{uniqueCode}, #{type}, #{subType}, #{remark}, #{price}, ST_GeomFromText(#{geoStr}, 4326))
+        insert into map_elements(name, longitude, latitude, element_location)
+        values (#{name}, #{longitude}, #{latitude}, ST_GeomFromText(#{geoStr}, 4326))
     </insert>
 
+<!--        id删除-->
     <delete id="deleteMapElement" parameterType="Long">
         delete from map_elements where id = #{id}
     </delete>
+
+<!--    条件查询-->
+    <select id="findMapElementByCondition" parameterType="com.honorzhang.postgresql.model.MapElement" resultMap="MapElementMap">
+        select  id, name, longitude, latitude,
+            ST_AsGeoJson(element_location) as element_location
+        FROM map_elements
+        where 1 = 1
+        <if test="name != null" >
+            and name like #{name}
+        </if>
+        <if test="longitude > 0">
+            and longitude = #{longitude}
+        </if>
+        <if test="latitude > 0">
+            and latitude = #{latitude}
+        </if>
+    </select>
+
+
+<!--        圆形区域查询-->
+    <select id="findMapElementByCircle" resultMap="MapElementMap">
+        SELECT id, name, longitude, latitude, ST_AsGeoJson(element_location) as element_location
+        from map_elements
+        where ST_DWithin(element_location :: geography, ST_GeomFromText('POINT' || #{geometry}, 4326 ) :: geography, #{radius} ) IS TRUE
+    </select>
+
+    <!--    多边形区域查询-->
+    <select id="findMapElementByPolygon" parameterType="String" resultMap="MapElementMap">
+        SELECT id, name,longitude, latitude,
+        ST_AsGeoJson(element_location) as element_location
+        from map_elements
+        where ST_Contains( ST_MakePolygon(ST_GeomFromText('LINESTRING' || #{geometry}, 4326)) , element_location) = 't'
+
+    </select>
+
 
 </mapper>

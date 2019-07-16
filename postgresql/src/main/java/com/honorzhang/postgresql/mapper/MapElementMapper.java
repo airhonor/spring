@@ -2,6 +2,7 @@ package com.honorzhang.postgresql.mapper;
 
 import com.honorzhang.postgresql.model.MapElement;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -12,12 +13,19 @@ import java.util.List;
  * @create: 2019-07-01 14:40
  **/
 @Mapper
-public interface MyMapMapper {
+public interface MapElementMapper {
 
     /**
      * @return 返回全部的mapElement
      */
     List<MapElement> findAll();
+
+    /**
+     * 条件查找
+     * @param mapElement
+     * @return 复合条件的地图元素
+     */
+    List<MapElement> findMapElementByCondition(MapElement mapElement);
 
     /**
      * @param mapElement
@@ -42,12 +50,19 @@ public interface MyMapMapper {
     void deleteMapElement(Long id);
 
     /**
+     * 圆形区域查找
      * @param geometry 地理信息
-     * @param type 元素大类
-     * @param subType 元素细分类
      * @param radius 区域半径，单位为km
-     * @return 以给定点为原型，radis为半径的区域中满足条件的元素的集合
+     * @return 以给定点为原型，radius为半径的区域中满足条件的元素的集合
      */
-    List<MapElement> findMapElementByCircle(String geometry, String type, String subType, double radius);
+    List<MapElement> findMapElementByCircle(@Param("geometry") String geometry,
+                                            @Param("radius") double radius);
+
+    /**
+     * 多边形区域查找
+     * @param geometry 对变形地理信息
+     * @return 给定多边形区域中满足条件的元素的集合
+     */
+    List<MapElement> findMapElementByPolygon(String geometry);
 
 }
