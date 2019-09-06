@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.honorzhang.mybatisplustest.mapper.StudentMapper">
+    <resultMap id="studentMapResult" type="com.honorzhang.mybatisplustest.model.Student">
+        <result property="id" column="id"/>
+        <result property="name" javaType="String" jdbcType="VARCHAR" column="name"/>
+        <result property="studentId" javaType="Long" jdbcType="BIGINT" column="student_id"/>
+        <collection property="classes" ofType="com.honorzhang.mybatisplustest.model.Classes">
+            <result property="id" column="c_id"/>
+            <result property="name" javaType="String" jdbcType="VARCHAR" column="c_name"/>
+            <result property="teacher" javaType="String" jdbcType="VARCHAR" column="teacher"/>
+        </collection>
+    </resultMap>
+    <!--    全部查找-->
+    <select id="findAll" resultMap="studentMapResult">
+        select student.*,
+				c.id as c_id, c.name as c_name,c.teacher
+        from student
+        left join
+        (SELECT classes.*,
+                        student_classes_relation.student_id
+        from classes, student_classes_relation
+        where student_classes_relation.classes_id = classes.id) as c
+        on student.student_id = c.student_id
+        </select>
+    <!--    id查找-->
+    <select id="findById" parameterType="Long" resultMap="studentMapResult">
+        select student.*,
+				c.id as c_id, c.name as c_name,c.teacher
+        from student
+        left join
+        (SELECT classes.*,
+                        student_classes_relation.student_id
+        from classes, student_classes_relation
+        where student_classes_relation.classes_id = classes.id) as c
+        on student.student_id = c.student_id
+        where student.id = #{id}
+    </select>
+    <!--    删除-->
+    <delete id="deleteStudent" parameterType="Long">
+        delete from student where id = #{id}
+    </delete>
+    <!--    删除关系表-->
+    <delete id="deleteStudentClassesId" parameterType="Long">
+        delete from student_classes_relation where student_id = #{studentId}
+    </delete>
+    <!--    更新-->
+    <update id="updateStudent" parameterType="com.honorzhang.mybatisplustest.model.Student" useGeneratedKeys="true"
+            keyProperty="id">
+        UPDATE student
+        <trim prefix="set" suffixOverrides=",">
+            <if test="name!=null">name=#{name},</if>
+            <if test="studentId >0">student_id=#{studentId},</if>
+        </trim>
+        WHERE id=#{id}
+    </update>
+    <!--    插入学生信息-->
+    <insert id="addStudent" parameterType="com.honorzhang.mybatisplustest.model.Student" useGeneratedKeys="true"
+            keyProperty="id">
+
+        insert into student (name, student_id)
+        values(#{name}, #{studentId})
+    </insert>
+    <!--    插入关系表信息-->
+    <insert id="addStudentClassesId" parameterType="java.util.List">
+        insert into student_classes_relation(student_id, classes_id)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.studentId}, #{item.classesId})
+        </foreach>
+    </insert>
+</mapper>
