@@ -3,6 +3,7 @@ package com.honorzhang.postgresql.ctrl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.honorzhang.postgresql.model.MapElement;
+import com.honorzhang.postgresql.model.vo.MapElementPageModel;
 import com.honorzhang.postgresql.service.MapService;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.json.JSONArray;
@@ -13,7 +14,9 @@ import org.springframework.web.bind.annotation.*;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @program: postgresql
@@ -127,6 +130,21 @@ public class MapController {
     @GetMapping("/polygon")
     public List<MapElement> findByMapElementPolygon(String geometry){
         return mapService.findMapElementByPolygon(geometry);
+    }
+
+    @PostMapping("/testInsert")
+    public String addTest(){
+        Map<String,Object> map = new HashMap<>();
+        List<MapElementPageModel> mapElementPageModelList = new ArrayList<>();
+        for(int i = 0; i<10; i++){
+            MapElementPageModel mapElementPageModel = new MapElementPageModel();
+            mapElementPageModel.setFireTeamId(1L);
+            mapElementPageModel.setFireTeamPeopleId((long) i);
+            mapElementPageModelList.add(mapElementPageModel);
+        }
+        map.put("testList",mapElementPageModelList );
+        mapService.addTest(map);
+        return "hahahhahahahahahhahah";
     }
 
 

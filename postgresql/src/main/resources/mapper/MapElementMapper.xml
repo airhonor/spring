@@ -110,5 +110,13 @@
 
     </select>
 
+    <insert id="addTest" parameterType="java.util.Map">
+        insert into test_insert(fire_id, people_id)
+        values
+        <foreach collection="testList" item="item" index="index" separator=",">
+            (#{item.fireTeamId}, #{item.fireTeamEquipmentId})
+        </foreach>
+    </insert>
+
 
 </mapper>

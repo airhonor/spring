@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @program: postgresql
@@ -63,6 +64,10 @@ public class MapServiceImpl implements MapService {
         return mapElementMapper.findMapElementByPolygon(geometry);
     }
 
+    @Override
+    public void addTest(Map<String, Object> map) {
+        mapElementMapper.addTest(map);
+    }
 
 
 }

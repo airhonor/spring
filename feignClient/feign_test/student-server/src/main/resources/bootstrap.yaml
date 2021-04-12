@@ -1,0 +1,10 @@
+eureka:
+  client:
+    service-url:
+      defaultZone: http://10.0.4.214:8797/eureka
+spring:
+  cloud:
+    config:
+      uri: http://10.0.4.214:8888
+      profile: dev
+      name: iss

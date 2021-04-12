@@ -1,0 +1,6 @@
+.idea/
+*.iml
+*.class
+*.kotlin_module
+*.log
+*/target/**

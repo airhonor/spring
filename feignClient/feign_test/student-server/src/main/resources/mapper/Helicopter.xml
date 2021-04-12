@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.honorzhang.code.student.mapper.HelicopterMapper">
+    <resultMap id="helicopterMap" type="com.honorzhang.code.student.model.Helicopter">
+        <id property="id" column="id"/>
+        <id property="rotorDiameter" javaType="Integer" jdbcType="NUMERIC" column="rotor_diameter"/>
+        <id property="tailOarDiameter" javaType="Integer" jdbcType="NUMERIC" column="tail_oar_diameter"/>
+        <id property="planeSize" javaType="String" jdbcType="VARCHAR" column="plane_size"/>
+        <id property="bodySize" javaType="String" jdbcType="VARCHAR" column="body_size"/>
+        <id property="emptyWeightReducingNoExternalWeight" javaType="Integer" jdbcType="NUMERIC"
+            column="empty_weight_reducing_no_external_weight"/>
+        <id property="hoverLimitWithGroundEffect" javaType="Integer" jdbcType="NUMERIC"
+            column="hover_limit_with_ground_effect"/>
+        <id property="hoverLimitWithoutGroundEffect" javaType="Integer" jdbcType="NUMERIC"
+            column="hover_limit_without_ground_effect"/>
+    </resultMap>
+
+    <!--    id查找-->
+    <select id="findById" parameterType="Integer" resultMap="helicopterMap">
+        select * from common_model cm LEFT JOIN helicopter he on cm.id = he.id where cm.id = #{id} and cm.type = '直升机'
+    </select>
+
+    <!--    插入-->
+    <insert id="insetHelicopter" parameterType="com.honorzhang.code.student.model.Helicopter" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into helicopter (id, rotor_diameter, tail_oar_diameter, plane_size, body_size, empty_weight_reducing_no_external_weight,
+                                    hover_limit_with_ground_effect, hover_limit_without_ground_effect)
+        values (#{id}, #{rotorDiameter}, #{tailOarDiameter}, #{planeSize}, #{bodySize}, #{emptyWeightReducingNoExternalWeight},
+            #{hoverLimitWithGroundEffect}, #{hoverLimitWithoutGroundEffect})
+    </insert>
+
+    <!--    更新-->
+    <update id="updateHelicopter" parameterType="com.honorzhang.code.student.model.Helicopter" useGeneratedKeys="true"
+            keyProperty="id">
+        update helicopter
+        <trim prefix="set" suffixOverrides=",">
+            <if test="rotorDiameter!=null">rotor_diameter=#{rotorDiameter},</if>
+            <if test="tailOarDiameter!=null">tail_oar_diameter=#{tailOarDiameter},</if>
+            <if test="planeSize!=null">plane_size=#{planeSize},</if>
+            <if test="bodySize!=null">body_size=#{bodySize},</if>
+            <if test="emptyWeightReducingNoExternalWeight!=null">
+                empty_weight_reducing_no_external_weight=#{emptyWeightReducingNoExternalWeight},
+            </if>
+            <if test="hoverLimitWithGroundEffect!=null">hover_limit_with_ground_effect=#{hoverLimitWithGroundEffect},
+            </if>
+            <if test="hoverLimitWithoutGroundEffect!=null">
+                hover_limit_without_ground_effect=#{hoverLimitWithoutGroundEffect},
+            </if>
+        </trim>
+        WHERE id=#{id}
+    </update>
+</mapper>

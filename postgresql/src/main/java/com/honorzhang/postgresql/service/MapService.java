@@ -1,9 +1,9 @@
 package com.honorzhang.postgresql.service;
 
 import com.honorzhang.postgresql.model.MapElement;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 public interface MapService {
 
@@ -55,5 +55,8 @@ public interface MapService {
      * @return 给定多边形区域中满足条件的元素的集合
      */
     List<MapElement> findMapElementByPolygon(String geometry);
+
+    void addTest(Map<String, Object> map);
+
 
 }

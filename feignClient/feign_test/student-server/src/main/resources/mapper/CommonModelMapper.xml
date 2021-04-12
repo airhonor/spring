@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.honorzhang.code.student.mapper.CommonModelMapper">
+
+    <!--批量查找-->
+    <select id="findBatchByIds" parameterType="java.util.List" resultType="com.honorzhang.code.student.model.CommonModel">
+        select *
+        from common_model
+        where id in
+        <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+</mapper>
