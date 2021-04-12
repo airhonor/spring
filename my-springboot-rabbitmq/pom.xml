@@ -32,7 +32,7 @@
         <maven-archetype-plugin.version>3.0.1</maven-archetype-plugin.version>
         <org.springframework.boot.version>2.2.7.RELEASE</org.springframework.boot.version>
         <!-- sonar and junit report libary -->
-        <junit.version>4.12</junit.version>
+        <junit.version>4.13.1</junit.version>
         <!-- lombok -->
         <lombok.version>1.18.8</lombok.version>
         <sonar.language>java</sonar.language>
